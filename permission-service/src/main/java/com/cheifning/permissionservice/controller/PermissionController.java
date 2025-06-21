@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @description: TODO
  * @author: ChiefNing
@@ -54,4 +56,10 @@ public class PermissionController {
         permissionService.downgradeToUser(userId);
     }
 
+    /**
+     * 返回所有的普通角色
+     *
+     */
+    @GetMapping("/getAllUser")
+    public List<Long> getAllUser() { return permissionService.getAllUser(); }
 }

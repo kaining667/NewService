@@ -9,6 +9,11 @@ import com.cheifning.permissionservice.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class PermissionServiceImpl implements PermissionService {
 
@@ -94,5 +99,20 @@ public class PermissionServiceImpl implements PermissionService {
         userRole1.setUserId(userId);
         userRole1.setRoleId(2);
         userRoleMapper.insert(userRole1);
+    }
+
+    /**
+     * 获取所有的user的id
+     */
+    @Override
+    public List<Long> getAllUser() {
+        QueryWrapper<UserRole> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("role_id",2);
+        List<UserRole> userRoles = userRoleMapper.selectList(queryWrapper);
+        List<Long> userIds = new ArrayList<>();
+        for (UserRole userRole : userRoles) {
+            userIds.add(userRole.getUserId());
+        }
+        return userIds;
     }
 }

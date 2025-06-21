@@ -1,5 +1,7 @@
 package com.cheifning.permissionservice.service;
 
+import java.util.List;
+
 public interface PermissionService {
 
     /**
@@ -21,4 +23,9 @@ public interface PermissionService {
      * 超管调用：降级用户为普通角色
      */
     void downgradeToUser(Long userId);
+
+    /**
+     * 获取所有的user的id
+     */
+    List<Long> getAllUser();
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,27 +46,20 @@ public class UsersServiceImpl implements UsersService {
         }
         Long RoleId = AuthorizeFilter.getUserId(request);
         String RoleCode = permissionClient.getUserRoleCode(RoleId);
-      //  Page<User> page = new Page<>(result.getPageNo(),result.getPageSize());
-       IPage<User> userIPage = new Page<>(result.getPageNo(),result.getPageSize());
+        Page<User> page = new Page<>(result.getPageNo(),result.getPageSize());
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         if("user".equals(RoleCode)){//查询自己的
             queryWrapper.eq(User::getUserId, RoleId);
+            System.out.println("user查询");
         }else if("admin".equals(RoleCode)){//查询普通用户的
-            queryWrapper = buildBaseQueryAdmin();
+            List<Long> usersIdList = permissionClient.getAllUser();
+            queryWrapper.in(User::getUserId, permissionClient.getAllUser());
+            System.out.println("admin查询");
+            System.out.println(usersIdList);
+        }else{
+            System.out.println("super_admin查询");
         }
-
-        return R.success(userMapper.selectPage(userIPage, queryWrapper));
+        return R.success(userMapper.selectPage(page, queryWrapper));
     }
 
-    private LambdaQueryWrapper<User> buildBaseQueryAdmin() {
-        List<Long> userIdList = new ArrayList<>();
-        List<User> userList = userMapper.selectList(null);
-        for (User user : userList) {
-            if(permissionClient.getUserRoleCode(user.getUserId()).equals("user")) {
-                userIdList.add(user.getUserId());
-            }
-        }
-        return new LambdaQueryWrapper<User>()
-                .in(User::getUserId, userIdList);
-    }
 }

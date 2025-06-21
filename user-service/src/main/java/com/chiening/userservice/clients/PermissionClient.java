@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import java.util.List;
+
 /**
  * @description: PRC接口，为nacos上注册的perminssionservice上的一系列方法，调用对应接口并且进行查询
  * @author: ChiefNing
@@ -43,4 +45,9 @@ public interface PermissionClient {
     @PutMapping("/downgradeToUser/{userId}")
     void downgradeToUser(@PathVariable Long userId);
 
+    /**
+     * 返回所有普通角色的id
+     */
+    @GetMapping("/getAllUser")
+    List<Long> getAllUser();
 }
