@@ -1,0 +1,64 @@
+server:
+  port: 8081
+#rocketmq配置
+rocketmq:
+  name-server: 127.0.0.1:9876
+  producer:
+    group: producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 2
+    max-message-size: 4194304
+spring:
+  #nacos配置
+  application:
+    name: userservice
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+  #shardingsphere配置
+  shardingsphere:
+    datasource:
+      names: ds0
+      ds0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/users_db?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false
+        username: root
+        password: 123456
+    rules:
+      sharding:
+        tables:
+          users:
+            actual-data-nodes: ds0.users_$->{1..2}
+            table-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: users-inline
+        sharding-algorithms:
+          users-inline:
+            type: INLINE
+            props:
+              algorithm-expression: users_$->{user_id % 2 + 1}
+    props:
+      sql-show: true
+#mybatis-plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml
+
+seata:
+  config:
+    type: nacos
+    nacos:
+      server-addr: 127.0.0.1:8848
+      namespace: 641af599-574b-4849-aa64-61b6278dd2b8
+      group: DEFAULT_GROUP
+      data-id: seata-server.properties
+  registry:
+    # support: nacos, eureka, redis, zk, consul, etcd3, sofa
+    type: nacos
+
+
+
+
