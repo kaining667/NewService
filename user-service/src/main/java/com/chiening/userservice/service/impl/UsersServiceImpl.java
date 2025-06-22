@@ -42,7 +42,7 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public R<IPage<User>> selectPage(PageResult result,  HttpServletRequest request) {
         if(!AuthorizeFilter.isUserLogin(request)) {
-            return R.error("未登录！，无法查询");
+            return R.error(403, "未登录！无法查询");
         }
         Long RoleId = AuthorizeFilter.getUserId(request);
         String RoleCode = permissionClient.getUserRoleCode(RoleId);

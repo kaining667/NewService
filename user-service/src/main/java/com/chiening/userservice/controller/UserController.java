@@ -57,7 +57,7 @@ public class UserController {
     }
 
     /**
-     * 密码重置接
+     * 密码重置接口
      */
     @PostMapping("/resetPassword")
     public R<Void> resetPassword(HttpServletRequest request) throws UnknownHostException {

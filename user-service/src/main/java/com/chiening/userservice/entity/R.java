@@ -27,7 +27,15 @@ public class R<T> {
         return new R<>(200, "操作成功", data);
     }
 
+    public static <T> R<T> success(Integer code, T data) {
+        return new R<>(code, "操作成功", data);
+    }
+
     public static <T> R<T> error(String message) {
         return new R<>(500, message, null);
+    }
+
+    public static <T> R<T> error(Integer code,String message) {
+        return new R<>(code, message, null);
     }
 }

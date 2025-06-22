@@ -52,7 +52,7 @@ public  class UserServiceImpl implements UserService {
         queryWrapper.eq("username", request.getUsername());
         User existUser = userMapper.selectOne(queryWrapper);
         if (existUser != null) {
-            return R.error("用户名已经存在");
+            return R.error(400, "用户名已经存在");
         }
         User user = new User();
         BeanUtils.copyProperties(request, user);
@@ -85,17 +85,17 @@ public  class UserServiceImpl implements UserService {
     public R<UserInfo> login(String username, String password, HttpServletRequest request) throws UnknownHostException {
         // 判断是否登录
         if(AuthorizeFilter.isUserLogin(request)) {
-            return R.error("用户已经登录！");
+            return R.error(400, "用户已经登录！");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         User user = userMapper.selectOne(queryWrapper);
         if(user == null){
-            return R.error("用户不存在！");
+            return R.error(401, "用户不存在！");
         }
         password = DigestUtils.md5DigestAsHex((password + user.getSalt()).getBytes());
         if (!password.equals(user.getPassword())) {
-            return R.error("密码错误！");
+            return R.error(401, "密码错误！");
         }
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(user.getUserId());
@@ -115,7 +115,7 @@ public  class UserServiceImpl implements UserService {
     @Override
     public R<User> getUser(Long userId, HttpServletRequest request) throws UnknownHostException {
         if(!AuthorizeFilter.isUserLogin(request)) {
-            return R.error("未登录，无法进行操作！");
+            return R.error(403, "未登录，无法进行操作！");
         }
         User user = userMapper.selectById(userId);
         if(user == null){
@@ -128,12 +128,12 @@ public  class UserServiceImpl implements UserService {
         if("admin".equals(RoleCode) && "super_admin".equals(UserCode)) {
             buildLogEvent(user, "QUERY", InetAddress.getLocalHost().getHostAddress(), "查询失败，越级查询，查询目标为" + user.getUsername() +
                     ",其级别是super_admin，查询者为" + userMapper.selectById(RoleId).getUsername() + ",其级别是admin");
-            return R.error("越级查询！");
+            return R.error(403, "越级查询！");
         }
         if("user".equals(RoleCode) && !RoleId.equals(userId)){
             buildLogEvent(user, "QUERY", InetAddress.getLocalHost().getHostAddress(), "查询失败，越级查询，查询目标为" + user.getUsername() +
                     "，查询者为" + userMapper.selectById(RoleId).getUsername() + "其级别是user，只能查询自己的");
-            return R.error("越级查询！");
+            return R.error(403, "越级查询！");
         }
         buildLogEvent(user, "QUERY", InetAddress.getLocalHost().getHostAddress(), "查询成功，越级查询，查询目标为" + user.getUsername() +
                 "，查询者为" + userMapper.selectById(RoleId).getUsername());
@@ -149,7 +149,7 @@ public  class UserServiceImpl implements UserService {
     @Override
     public R<Void> updateUser(Long userId, User user, HttpServletRequest request) throws UnknownHostException {
         if(!AuthorizeFilter.isUserLogin(request)) {
-            return R.error("未登录，无法进行操作");
+            return R.error(403, "未登录，无法进行操作");
         }
         User existUser = userMapper.selectById(userId);
         if (existUser == null) {
@@ -162,14 +162,14 @@ public  class UserServiceImpl implements UserService {
         if(("admin".equals(RoleCode) && "super_admin".equals(UserCode)) || ("user".equals(RoleCode) && !RoleId.equals(userId))) {
             buildLogEvent(user, "UPDATE", InetAddress.getLocalHost().getHostAddress(), "查询失败，越级修改，修改目标为" + user.getUsername() +
                     "，修改者为" + userMapper.selectById(RoleId).getUsername());
-            return R.error("用户没有修改权限");
+            return R.error(403, "用户没有修改权限");
         }
         buildLogEvent(user, "UPDATE", InetAddress.getLocalHost().getHostAddress(), "修改成功！修改前的username,password,phone,email分别是" + existUser.getUsername() + " " +
                 existUser.getPassword() + " " + existUser.getPhone() + "  " + existUser.getEmail() + "修改后的username,password,phone,email分别是" +
                 user.getUsername() + " " + user.getPassword() + " " + user.getPhone() + "  " + user.getEmail());
         BeanUtils.copyProperties(user, existUser, "userId", "password", "gmtCreate");
         userMapper.updateById(existUser);
-        return R.success(null);
+        return R.success(204,null);
     }
 
     /**
@@ -178,6 +178,9 @@ public  class UserServiceImpl implements UserService {
      */
     @Override
     public R<Void> resetPassword(HttpServletRequest request) throws UnknownHostException {
+        if(!AuthorizeFilter.isUserLogin(request)) {
+            return R.error(403, "未登录，无法进行操作");
+        }
         Long RoleId = AuthorizeFilter.getUserId(request);
         String RoleCode = permissionClient.getUserRoleCode(RoleId);
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -203,7 +206,7 @@ public  class UserServiceImpl implements UserService {
             userMapper.update(null, updateWrapper);
         }
         buildLogEvent(user, "RESEATPASSWORD", InetAddress.getLocalHost().getHostAddress(), "重置成功！");
-        return R.success(null);
+        return R.success(204, null);
     }
 
     void buildLogEvent(User user, String action, String IP, String detail) {
