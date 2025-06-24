@@ -1,0 +1,15 @@
+server:
+  port: 8082
+spring:
+  #nacos配置
+  application:
+    name: permissionservice
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+  #数据源配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/role_db?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
